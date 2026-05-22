@@ -1,0 +1,15 @@
+[project]
+name = "peak-chooser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.4.1",
+    "matplotlib>=3.10.9",
+    "pandas>=3.0.3",
+    "scipy>=1.17.1",
+]
+
+[project.scripts]
+choose_peaks = "main:main"
