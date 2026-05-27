@@ -1,4 +1,4 @@
-from scipy.signal import find_peaks
+from scipy import signal
 import click
 import pandas
 import matplotlib.pyplot as plt
@@ -20,6 +20,7 @@ def get_plots() -> list[matplotlib.axes.Axes]:
         ax.axhline(0, color="black", linewidth=1.2)
 
     return axs
+
 
 @click.command()
 @click.argument(
@@ -44,6 +45,11 @@ def get_plots() -> list[matplotlib.axes.Axes]:
     help="Find peaks that are at least {DISTANCE} data points apart from each other.",
 )
 @click.option(
+    "--detrend",
+    is_flag=True,
+    help="Normalize values around 0",
+)
+@click.option(
     "--plot",
     is_flag=True,
     help="Include this flag to display the visualization plots.",
@@ -55,14 +61,32 @@ def get_plots() -> list[matplotlib.axes.Axes]:
     default="echo",
     help="Output format for the detected peaks. Defaults to 'echo'.",
 )
-def main(csv_path, delimiter, prominence, distance, plot, output):
+def main(csv_path, delimiter, prominence, distance, detrend, plot, output):
     sample = get_sample(csv_path, delimiter)
+    time_column_name = sample.columns[TIME_INDEX]
+    content_column_name = sample.columns[CONTENT_INDEX]
+
     content_values = sample.iloc[:, CONTENT_INDEX]
 
-    peak_indices, _ = find_peaks(
+    if detrend:
+        content_values = signal.detrend(content_values)
+
+    peak_indices, _ = signal.find_peaks(
         content_values, prominence=prominence, distance=distance
     )
-    peaks = sample.iloc[peak_indices]
+
+    if detrend:
+        peaks = []
+        for idx in peak_indices:
+            peaks.append(
+                {
+                    time_column_name: sample.iloc[idx, TIME_INDEX],
+                    content_column_name: content_values[idx],
+                }
+            )
+        peaks = pandas.DataFrame(peaks)
+    else:
+        peaks = sample.iloc[peak_indices]
 
     if peaks.empty:
         if output.lower() == "echo":
@@ -79,7 +103,7 @@ def main(csv_path, delimiter, prominence, distance, plot, output):
     if plot:
         plots = get_plots()
 
-        plots[0].plot(sample.iloc[:, TIME_INDEX], sample.iloc[:, CONTENT_INDEX])
+        plots[0].plot(sample.iloc[:, TIME_INDEX], content_values)
 
         plots[1].plot(
             peaks.iloc[:, TIME_INDEX],
