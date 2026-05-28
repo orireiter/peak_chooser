@@ -24,6 +24,7 @@ choose_peaks sample_1.csv -d "," --plot --prominence 0.5 --distance 10 -o csv > 
 - `-d`, `--delimiter` : Delimiter used in the CSV file (defaults to tab `\t` due to Excel).
 - `--prominence` : Minimum prominence of peaks.
 - `--distance` : Minimum distance between peaks (in data points).
+- `--detrend` : Normalize signal around zero before choosing peaks.
 - `--plot` : Show visualization plots.
 - `-o`, `--output` : Output format, either `echo` (default) or `csv`.
 
